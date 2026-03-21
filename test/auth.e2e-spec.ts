@@ -2,60 +2,117 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { InMemoryAuthRepository } from 'src/auth/infrastructure/auth.repository.inmemory';
-import { AUTH_REPOSITORY } from 'src/auth/infrastructure/auth.tokens';
+import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
+import { InMemoryUserRepository } from 'src/user/infrastructure/in-memory-user.repository';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
+  let repo: InMemoryUserRepository;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(AUTH_REPOSITORY)
-      .useClass(InMemoryAuthRepository)
+      .overrideProvider(USER_REPOSITORY)
+      .useClass(InMemoryUserRepository)
       .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    repo = app.get<InMemoryUserRepository>(USER_REPOSITORY);
   });
 
-  it('/auth/signUp (POST)', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/auth/signUp')
-      .send({
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(async () => {
+    await repo.clear();
+  });
+
+  describe('/auth/signUp (POST)', () => {
+    it('should create user and return 201', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/signUp')
+        .send({
+          nickname: 'John Doe',
+          email: 'john@email.com',
+          password: '123456',
+        })
+        .expect(201);
+
+      expect(res.body).toEqual({
+        message: 'User created',
+      });
+
+      expect(res.headers['set-cookie']).toBeDefined();
+    });
+
+    it('should return 400 when user is found', async () => {
+      await request(app.getHttpServer()).post('/auth/signUp').send({
         nickname: 'John Doe',
         email: 'john@email.com',
         password: '123456',
-      })
-      .expect(201);
+      });
 
-    expect(res.body).toEqual({
-      message: 'User created',
+      await request(app.getHttpServer())
+        .post('/auth/signUp')
+        .send({
+          email: 'john@email.com',
+          password: '123456',
+        })
+        .expect(400);
     });
-
-    expect(res.headers['set-cookie']).toBeDefined();
   });
 
-  it('/auth/signIn (POST)', async () => {
-    await request(app.getHttpServer()).post('/auth/signUp').send({
-      nickname: 'John Doe',
-      email: 'john@email.com',
-      password: '123456',
-    });
-
-    const res = await request(app.getHttpServer())
-      .post('/auth/signIn')
-      .send({
+  describe('/auth/signIn (POST)', () => {
+    it('should log user', async () => {
+      await request(app.getHttpServer()).post('/auth/signUp').send({
+        nickname: 'John Doe',
         email: 'john@email.com',
         password: '123456',
-      })
-      .expect(200);
+      });
 
-    expect(res.body).toEqual({
-      message: 'User logged',
+      const res = await request(app.getHttpServer())
+        .post('/auth/signIn')
+        .send({
+          email: 'john@email.com',
+          password: '123456',
+        })
+        .expect(200);
+
+      expect(res.body).toEqual({
+        message: 'User logged',
+      });
+
+      expect(res.headers['set-cookie']).toBeDefined();
     });
 
-    expect(res.headers['set-cookie']).toBeDefined();
+    it('should return 400 when user is not found', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/signIn')
+        .send({
+          email: 'john@email.com',
+          password: '123456',
+        })
+        .expect(400);
+    });
+
+    it('should return 401 when password do not match', async () => {
+      await request(app.getHttpServer()).post('/auth/signUp').send({
+        nickname: 'John Doe',
+        email: 'john@email.com',
+        password: '123456',
+      });
+
+      await request(app.getHttpServer())
+        .post('/auth/signIn')
+        .send({
+          email: 'john@email.com',
+          password: '1234567',
+        })
+        .expect(401);
+    });
   });
 });

@@ -4,23 +4,24 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+
 import { SignUpRequestBodyDto } from '../dto/sign-up.dto';
 import { SignInRequestBodyDto } from '../dto/sign-in.dto';
-import { type AuthRepository } from '../domain/auth.repository';
-import { AUTH_REPOSITORY } from '../infrastructure/auth.tokens';
+import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
+import { type UserRepository } from 'src/user/domain/user.repository';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(AUTH_REPOSITORY)
-    private readonly authRepository: AuthRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
     private jwtService: JwtService,
   ) {}
 
   async signUp(data: SignUpRequestBodyDto) {
-    const userAlreadyExists = await this.authRepository.findByEmail(data.email);
+    const userAlreadyExists = await this.userRepository.findByEmail(data.email);
 
     if (userAlreadyExists) {
       throw new BadRequestException();
@@ -28,7 +29,7 @@ export class AuthService {
 
     const hash = await bcrypt.hash(data.password, 10);
 
-    const user = await this.authRepository.create({
+    const user = await this.userRepository.create({
       ...data,
       password: hash,
     });
@@ -41,7 +42,7 @@ export class AuthService {
   }
 
   async signIn(data: SignInRequestBodyDto) {
-    const userExists = await this.authRepository.findByEmail(data.email);
+    const userExists = await this.userRepository.findByEmail(data.email);
 
     if (!userExists) {
       throw new BadRequestException();

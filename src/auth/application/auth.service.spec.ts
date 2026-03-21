@@ -6,24 +6,24 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
-import { AuthRepository } from '../domain/auth.repository';
-import { AUTH_REPOSITORY } from '../infrastructure/auth.tokens';
+import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
+import { type UserRepository } from 'src/user/domain/user.repository';
 
 jest.mock('bcrypt');
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let authRepository: AuthRepository;
+  let userRepository: UserRepository;
 
-  const mockAuthRepository = {
+  const mockUserRepository = {
     create: jest.fn(),
     findById: jest.fn(),
     findByEmail: jest.fn(),
   };
 
   const mockUser = () => ({
-    nickname: 'maria',
-    email: 'maria@email.com',
+    nickname: 'John Doe',
+    email: 'john@email.com',
     password: 'password_hashed',
   });
 
@@ -36,8 +36,8 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: AUTH_REPOSITORY,
-          useValue: mockAuthRepository,
+          provide: USER_REPOSITORY,
+          useValue: mockUserRepository,
         },
         {
           provide: JwtService,
@@ -47,7 +47,7 @@ describe('AuthService', () => {
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
-    authRepository = module.get<AuthRepository>(AUTH_REPOSITORY);
+    userRepository = module.get<UserRepository>(USER_REPOSITORY);
 
     (bcrypt.hash as jest.Mock).mockResolvedValue('password_hashed');
   });
@@ -64,17 +64,17 @@ describe('AuthService', () => {
     };
 
     it('should throw if user already exists', async () => {
-      mockAuthRepository.findByEmail.mockResolvedValue({ email: dto.email });
+      mockUserRepository.findByEmail.mockResolvedValue({ email: dto.email });
 
       await expect(authService.signUp(dto)).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
-      expect(authRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(dto.email);
     });
 
     it('should create user and return access token', async () => {
-      mockAuthRepository.findByEmail.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
 
       const user = {
         id: randomUUID(),
@@ -83,15 +83,15 @@ describe('AuthService', () => {
         password: 'password_hashed',
       };
 
-      mockAuthRepository.create.mockResolvedValue(user);
+      mockUserRepository.create.mockResolvedValue(user);
 
       const result = await authService.signUp(dto);
 
-      expect(authRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(dto.email);
 
       expect(bcrypt.hash).toHaveBeenCalledWith(dto.password, 10);
 
-      expect(authRepository.create).toHaveBeenCalled();
+      expect(userRepository.create).toHaveBeenCalled();
 
       expect(mockJwtService.signAsync).toHaveBeenCalledWith({
         sub: user.id,
@@ -111,17 +111,17 @@ describe('AuthService', () => {
     };
 
     it('should throw if user not exists', async () => {
-      mockAuthRepository.findByEmail.mockResolvedValue(null);
+      mockUserRepository.findByEmail.mockResolvedValue(null);
 
       await expect(authService.signIn(dto)).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
-      expect(authRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(dto.email);
     });
 
     it('should throw if user´s password is not correct', async () => {
-      mockAuthRepository.findByEmail.mockResolvedValue(mockUser());
+      mockUserRepository.findByEmail.mockResolvedValue(mockUser());
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
@@ -129,17 +129,17 @@ describe('AuthService', () => {
         UnauthorizedException,
       );
 
-      expect(authRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(dto.email);
     });
 
     it('should sign in user if email and password is correct and return access token', async () => {
-      mockAuthRepository.findByEmail.mockResolvedValue(mockUser());
+      mockUserRepository.findByEmail.mockResolvedValue(mockUser());
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await authService.signIn(dto);
 
-      expect(authRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(dto.email);
 
       expect(result).toHaveProperty('access_token');
 
