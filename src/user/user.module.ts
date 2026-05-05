@@ -3,7 +3,7 @@ import { UserService } from './application/user.service';
 import { UserController } from './presentation/user.controller';
 import { USER_REPOSITORY } from './infrastructure/user.tokens';
 import { DrizzleUserRepository } from './infrastructure/drizzle-user.repository';
-import { CommonModule } from 'src/common/common.module';
+import { CommonModule } from 'common/common.module';
 
 @Module({
   controllers: [UserController],

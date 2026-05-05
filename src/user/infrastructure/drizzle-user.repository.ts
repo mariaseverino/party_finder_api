@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { eq, inArray } from 'drizzle-orm';
-import { db } from 'src/db/client';
-import { users } from 'src/db/schema/user';
 import { UserRepository } from '../domain/user.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { tags, userInterests } from 'src/db/schema/rpg-group';
+import { db } from 'db/client';
+import { userInterests, users } from 'db/schema/user';
+import { tags } from 'db/schema/tag';
 
 @Injectable()
 export class DrizzleUserRepository implements UserRepository {
@@ -40,6 +40,6 @@ export class DrizzleUserRepository implements UserRepository {
       .from(tags)
       .where(inArray(tags.id, tagIds));
 
-    return result.map((t) => t.id); // retorna só os ids existentes
+    return result.map((t) => t.id);
   }
 }

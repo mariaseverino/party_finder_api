@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { InMemoryUserRepository } from 'user/infrastructure/in-memory-user.repository';
+import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
+import { JwtAuthGuard } from 'common/jwt-auth.guard';
 import { AppModule } from '../src/app.module';
-import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
-import { InMemoryUserRepository } from 'src/user/infrastructure/in-memory-user.repository';
-import { JwtAuthGuard } from 'src/common/jwt-auth.guard';
 
 describe('UserController (e2e)', () => {
   let app: INestApplication;

@@ -1,8 +1,8 @@
 import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { UserService } from '../application/user.service';
-import { CurrentUser } from 'src/common/current-user.param';
-import { type JwtPayload } from 'src/common/jwt-payload.type';
-import { JwtAuthGuard } from 'src/common/jwt-auth.guard';
+import { JwtAuthGuard } from 'common/jwt-auth.guard';
+import { CurrentUser } from 'common/current-user.param';
+import { type JwtPayload } from 'common/jwt-payload.type';
 
 @Controller('user')
 export class UserController {

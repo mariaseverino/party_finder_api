@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
-import { type UserRepository } from 'src/user/domain/user.repository';
 import { UserService } from './user.service';
 import { BadRequestException } from '@nestjs/common';
+import { UserRepository } from 'user/domain/user.repository';
+import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 
 describe('UserService', () => {
   let userService: UserService;

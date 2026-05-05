@@ -4,14 +4,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-
 import { SignUpRequestBodyDto } from '../dto/sign-up.dto';
 import { SignInRequestBodyDto } from '../dto/sign-in.dto';
-import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
-import { type UserRepository } from 'src/user/domain/user.repository';
+import { type UserRepository } from 'user/domain/user.repository';
+import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-
 @Injectable()
 export class AuthService {
   constructor(

@@ -1,0 +1,1 @@
+export const RPG_GROUP_REPOSITORY = Symbol('RPG_GROUP_REPOSITORY');

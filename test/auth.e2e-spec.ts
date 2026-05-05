@@ -1,9 +1,9 @@
+import request from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
+import { InMemoryUserRepository } from 'user/infrastructure/in-memory-user.repository';
+import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 import { AppModule } from '../src/app.module';
-import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
-import { InMemoryUserRepository } from 'src/user/infrastructure/in-memory-user.repository';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;

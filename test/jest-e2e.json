@@ -2,12 +2,16 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "..",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  // "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^src/(.*)$": "<rootDir>/src/$1"
+    "^user/(.*)$": "<rootDir>/src/user/$1",
+    "^rpg-group/(.*)$": "<rootDir>/src/rpg-group/$1",
+    "^auth/(.*)$": "<rootDir>/src/auth/$1",
+    "^common/(.*)$": "<rootDir>/src/common/$1",
+    "^db/(.*)$": "<rootDir>/src/db/$1"
   },
   "collectCoverage": true,
   "collectCoverageFrom": [
@@ -15,7 +19,10 @@
     "!src/**/*.spec.ts",
     "!src/main.ts",
     "!src/**/*.module.ts",
-    "!src/**/*.tokens.ts"
+    "!src/**/*.tokens.ts",
+    "!src/**/drizzle-*.ts",
+    "!src/db/**"
   ],
+  "testMatch": ["**/*.spec.ts", "**/*.e2e-spec.ts"],
   "coverageDirectory": "coverage/e2e"
 }

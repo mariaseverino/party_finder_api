@@ -6,8 +6,8 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
-import { USER_REPOSITORY } from 'src/user/infrastructure/user.tokens';
-import { type UserRepository } from 'src/user/domain/user.repository';
+import { UserRepository } from 'user/domain/user.repository';
+import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 
 jest.mock('bcrypt');
 
