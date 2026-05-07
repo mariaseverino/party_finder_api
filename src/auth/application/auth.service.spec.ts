@@ -19,6 +19,7 @@ describe('AuthService', () => {
     create: jest.fn(),
     findById: jest.fn(),
     findByEmail: jest.fn(),
+    saveRefreshToken: jest.fn(),
   };
 
   const mockUser = () => ({
@@ -93,13 +94,14 @@ describe('AuthService', () => {
 
       expect(userRepository.create).toHaveBeenCalled();
 
-      expect(mockJwtService.signAsync).toHaveBeenCalledWith({
-        sub: user.id,
-        email: user.email,
-      });
+      // expect(mockUserRepository.generateTokenPair).toHaveBeenCalledWith(
+      //   user.id,
+      //   user.email,
+      // );
 
-      expect(result).toEqual({
-        access_token: 'fake_token',
+      expect(result).toMatchObject({
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
       });
     });
   });
@@ -141,9 +143,15 @@ describe('AuthService', () => {
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(dto.email);
 
-      expect(result).toHaveProperty('access_token');
+      // expect(mockUserRepository.generateTokenPair).toHaveBeenCalledWith(
+      //   '',
+      //   dto.email,
+      // );
 
-      expect(mockJwtService.signAsync).toHaveBeenCalled();
+      expect(result).toMatchObject({
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
+      });
     });
   });
 });

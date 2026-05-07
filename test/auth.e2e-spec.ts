@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { InMemoryUserRepository } from 'user/infrastructure/in-memory-user.repository';
 import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 import { AppModule } from '../src/app.module';
+import { JwtRefreshAuthGuard } from 'auth/jwt-refresh-auth.guard';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -15,6 +16,14 @@ describe('AuthController (e2e)', () => {
     })
       .overrideProvider(USER_REPOSITORY)
       .useClass(InMemoryUserRepository)
+      .overrideGuard(JwtRefreshAuthGuard)
+      .useValue({
+        canActivate: (context) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = { email: 'john@email.com', sub: '' };
+          return true;
+        },
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -113,6 +122,52 @@ describe('AuthController (e2e)', () => {
           password: '1234567',
         })
         .expect(401);
+    });
+  });
+
+  describe('/auth/refresh (POST)', () => {
+    it('should refresh token and return a message', async () => {
+      // faz signUp primeiro para ter usuário e refresh token no banco
+      const signUpRes = await request(app.getHttpServer())
+        .post('/auth/signUp')
+        .send({
+          nickname: 'John',
+          email: 'john@email.com',
+          password: '123456',
+        });
+
+      const cookies = signUpRes.headers['set-cookie'];
+
+      const res = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', cookies) // manda o refresh_token no cookie
+        .expect(200);
+
+      expect(res.body).toMatchObject({ message: 'Token refreshed' });
+      expect(res.headers['set-cookie']).toBeDefined(); // novos cookies gerados
+    });
+
+    it('should set new cookies on refresh', async () => {
+      const signUpRes = await request(app.getHttpServer())
+        .post('/auth/signUp')
+        .send({
+          nickname: 'John',
+          email: 'john@email.com',
+          password: '123456',
+        });
+
+      const cookies = signUpRes.headers['set-cookie'];
+
+      const res = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', cookies)
+        .expect(200);
+
+      expect(res.headers['set-cookie']).toBeDefined();
+
+      const newCookies = res.headers['set-cookie'] as unknown as string[];
+      expect(newCookies.some((c) => c.startsWith('access_token'))).toBe(true);
+      expect(newCookies.some((c) => c.startsWith('refresh_token'))).toBe(true);
     });
   });
 });

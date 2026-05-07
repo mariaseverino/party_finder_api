@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { UserRepository } from '../domain/user.repository';
+import { RefreshToken, UserRepository } from '../domain/user.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 
 interface CreatedUserDto {
@@ -13,6 +13,7 @@ interface CreatedUserDto {
 export class InMemoryUserRepository implements UserRepository {
   private users: CreatedUserDto[] = [];
   private usersInterests: string[] = ['1', '2'];
+  private refreshTokens: Map<string, string> = new Map();
 
   async findExistingTags(tagIds: string[]): Promise<string[]> {
     return this.usersInterests.filter((i) => tagIds.includes(i));
@@ -41,5 +42,19 @@ export class InMemoryUserRepository implements UserRepository {
 
   async clear(): Promise<void> {
     this.users = [];
+    this.refreshTokens.clear();
+  }
+
+  async saveRefreshToken(userId: string, token: string): Promise<void> {
+    this.refreshTokens.set(userId, token);
+  }
+
+  async findRefreshToken(userId: string): Promise<RefreshToken | null> {
+    const token = this.refreshTokens.get(userId);
+    return token ? { userId, token } : null;
+  }
+
+  clearRefreshToken(userId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }

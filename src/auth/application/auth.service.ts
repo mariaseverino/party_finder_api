@@ -32,11 +32,7 @@ export class AuthService {
       password: hash,
     });
 
-    const payload = { sub: user.id, email: user.email };
-
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    return await this.generateTokenPair(user.id, user.email);
   }
 
   async signIn(data: SignInRequestBodyDto) {
@@ -52,10 +48,25 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const payload = { sub: userExists.id, email: userExists.email };
+    return await this.generateTokenPair(userExists.id, userExists.email);
+  }
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+  async signOut(userId: string) {
+    await this.userRepository.clearRefreshToken(userId);
+  }
+
+  async generateTokenPair(userId: string, email: string) {
+    const accessToken = await this.jwtService.signAsync(
+      { sub: userId, email },
+      { expiresIn: '1h' },
+    );
+    const refreshToken = await this.jwtService.signAsync(
+      { sub: userId, email },
+      { expiresIn: '14d' },
+    );
+
+    await this.userRepository.saveRefreshToken(userId, refreshToken);
+
+    return { accessToken, refreshToken };
   }
 }

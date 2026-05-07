@@ -3,7 +3,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { UserRepository } from '../domain/user.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { db } from 'db/client';
-import { userInterests, users } from 'db/schema/user';
+import { refreshTokens, userInterests, users } from 'db/schema/user';
 import { tags } from 'db/schema/tag';
 
 @Injectable()
@@ -41,5 +41,28 @@ export class DrizzleUserRepository implements UserRepository {
       .where(inArray(tags.id, tagIds));
 
     return result.map((t) => t.id);
+  }
+
+  async saveRefreshToken(userId: string, token: string): Promise<void> {
+    await db
+      .insert(refreshTokens)
+      .values({ userId, token })
+      .onConflictDoUpdate({
+        target: refreshTokens.userId,
+        set: { token },
+      });
+  }
+
+  async clearRefreshToken(userId: string): Promise<void> {
+    await db.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
+  }
+
+  async findRefreshToken(userId: string) {
+    const [refreshToken] = await db
+      .select()
+      .from(refreshTokens)
+      .where(eq(refreshTokens.userId, userId));
+
+    return refreshToken;
   }
 }

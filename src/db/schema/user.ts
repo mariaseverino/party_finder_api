@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
 import { tags } from './tag';
 
 export const users = pgTable('users', {
@@ -10,11 +10,18 @@ export const users = pgTable('users', {
 
 export const userInterests = pgTable('user_interests', {
   id: uuid().defaultRandom().primaryKey(),
-
   userId: uuid()
     .notNull()
     .references(() => users.id),
   tagId: uuid()
     .notNull()
     .references(() => tags.id),
+});
+
+export const refreshTokens = pgTable('refresh_tokens', {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid()
+    .notNull()
+    .references(() => users.id),
+  token: text().notNull(),
 });
