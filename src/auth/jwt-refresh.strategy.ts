@@ -17,15 +17,11 @@ export class JwtRefreshStrategy extends PassportStrategy(
   ) {
     const jwtSecret = process.env.JWT_SECRET;
 
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET must be configured.');
-    }
-
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => req.cookies?.refresh_token,
       ]),
-      secretOrKey: jwtSecret,
+      secretOrKey: jwtSecret!,
       passReqToCallback: true,
     });
   }

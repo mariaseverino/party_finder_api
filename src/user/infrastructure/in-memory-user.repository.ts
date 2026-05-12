@@ -54,7 +54,7 @@ export class InMemoryUserRepository implements UserRepository {
     return token ? { userId, token } : null;
   }
 
-  clearRefreshToken(userId: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  async clearRefreshToken(userId: string): Promise<void> {
+    this.refreshTokens.delete(userId);
   }
 }

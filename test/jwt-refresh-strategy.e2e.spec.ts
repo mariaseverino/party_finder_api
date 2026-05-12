@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
+import { Test } from '@nestjs/testing';
 import { InMemoryUserRepository } from 'user/infrastructure/in-memory-user.repository';
 import { AppModule } from '../src/app.module';
 import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 import cookieParser from 'cookie-parser';
+import request from 'supertest';
 
 describe('JwtRefreshStrategy (e2e)', () => {
   let app: INestApplication;
@@ -54,9 +54,20 @@ describe('JwtRefreshStrategy (e2e)', () => {
       .expect(200);
 
     expect(res.body).toEqual({ message: 'Token refreshed' });
+  });
 
-    const newCookies = res.headers['set-cookie'] as unknown as string[];
-    expect(newCookies.some((c) => c.startsWith('access_token'))).toBe(true);
-    expect(newCookies.some((c) => c.startsWith('refresh_token'))).toBe(true);
+  it('should return 401 when refresh token is not in db', async () => {
+    const signUpRes = await request(app.getHttpServer())
+      .post('/auth/signUp')
+      .send({ email: 'john@email.com', nickname: 'john', password: '123456' });
+
+    const cookies = signUpRes.headers['set-cookie'];
+
+    await repoUser.clear();
+
+    await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .set('Cookie', cookies)
+      .expect(401);
   });
 });

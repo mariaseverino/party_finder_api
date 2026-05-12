@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -14,6 +15,7 @@ import { SignInRequestBodyDto } from '../dto/sign-in.dto';
 import { JwtRefreshAuthGuard } from 'auth/jwt-refresh-auth.guard';
 import { CurrentUser } from 'common/current-user.param';
 import { type JwtPayload } from 'common/jwt-payload.type';
+import { JwtAuthGuard } from 'common/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -58,6 +60,19 @@ export class AuthController {
     this.setAuthCookies(response, accessToken, refreshToken);
 
     return { message: 'Token refreshed' };
+  }
+
+  @Post('/signOut')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async signOut(
+    @CurrentUser() user: JwtPayload,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.authService.signOut(user.sub);
+    response.clearCookie('access_token');
+    response.clearCookie('refresh_token');
+    return { message: 'User logged out' };
   }
 
   private setAuthCookies(

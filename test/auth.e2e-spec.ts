@@ -170,4 +170,23 @@ describe('AuthController (e2e)', () => {
       expect(newCookies.some((c) => c.startsWith('refresh_token'))).toBe(true);
     });
   });
+
+  // describe('/auth/signOut (POST)', () => {
+  //   it('should logout user', async () => {
+  //     const signUpRes = await request(app.getHttpServer())
+  //       .post('/auth/signUp')
+  //       .send({
+  //         nickname: 'John',
+  //         email: 'john@email.com',
+  //         password: '123456',
+  //       });
+
+  //     const cookies = signUpRes.headers['set-cookie'];
+
+  //     await request(app.getHttpServer())
+  //       .post('/auth/signOut')
+  //       .set('Cookie', cookies)
+  //       .expect(200);
+  //   });
+  // });
 });

@@ -55,4 +55,24 @@ describe('JwtStrategy (e2e)', () => {
       .set('Cookie', cookie)
       .expect(200);
   });
+
+  it('should sign out and clear cookies', async () => {
+    const signUpRes = await request(app.getHttpServer())
+      .post('/auth/signUp')
+      .send({ email: 'john@email.com', nickname: 'john', password: '123456' });
+
+    const cookie = signUpRes.headers['set-cookie'];
+
+    const res = await request(app.getHttpServer())
+      .post('/auth/signOut')
+      .set('Cookie', cookie)
+      .expect(200);
+
+    expect(res.body).toEqual({ message: 'User logged out' });
+
+    // verifica que os cookies foram limpos
+    const cookies = res.headers['set-cookie'] as unknown as string[];
+    expect(cookies.some((c) => c.includes('access_token=;'))).toBe(true);
+    expect(cookies.some((c) => c.includes('refresh_token=;'))).toBe(true);
+  });
 });
