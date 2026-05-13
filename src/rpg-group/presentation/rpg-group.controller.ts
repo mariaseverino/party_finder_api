@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'common/jwt-auth.guard';
+import { JwtRefreshAuthGuard } from 'auth/jwt-refresh-auth.guard';
 import { RpgGroupService } from 'rpg-group/application/rpg-group.service';
 import { CreateRpgGroupRequestBodyDto } from 'rpg-group/dto/create-rpg-group.dto';
 
@@ -7,21 +7,27 @@ import { CreateRpgGroupRequestBodyDto } from 'rpg-group/dto/create-rpg-group.dto
 export class RpgGroupController {
   constructor(private readonly rpgGroupService: RpgGroupService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   @Post()
   create(@Body() data: CreateRpgGroupRequestBodyDto) {
     return this.rpgGroupService.create(data);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   @Get()
   getAll() {
     return this.rpgGroupService.getAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   @Get(':masterId')
   getMasterRpgGroups(@Param('masterId') masterId: string) {
     return this.rpgGroupService.getAllRpgGroupByMasterId(masterId);
+  }
+
+  @UseGuards(JwtRefreshAuthGuard)
+  @Get(':id')
+  getRpgGroup(@Param('id') id: string) {
+    return this.rpgGroupService.getRpgGroupById(id);
   }
 }

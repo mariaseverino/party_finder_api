@@ -8,4 +8,5 @@ export interface RpgGroupRepository {
   saveTags(groupId: string, tags: string[]): Promise<void>;
   createTag(name: string): Promise<void>;
   findAllByMaster(masterId: string): Promise<RPGGroup[]>;
+  findById(id: string): Promise<RPGGroup | undefined>;
 }

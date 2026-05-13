@@ -50,4 +50,14 @@ export class RpgGroupService {
   async getAllRpgGroupByMasterId(masterId: string) {
     return await this.rpgGroupRepository.findAllByMaster(masterId);
   }
+
+  async getRpgGroupById(id: string) {
+    const rpgGroupExists = await this.rpgGroupRepository.findById(id);
+
+    if (!rpgGroupExists) {
+      throw new NotFoundException();
+    }
+
+    return rpgGroupExists;
+  }
 }

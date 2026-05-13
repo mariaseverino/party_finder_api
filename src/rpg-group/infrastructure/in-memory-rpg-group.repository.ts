@@ -36,4 +36,8 @@ export class InMemoryRpgGroupRepository implements RpgGroupRepository {
   async clear(): Promise<void> {
     this.rpgGroups = [];
   }
+
+  async findById(id: string): Promise<RPGGroup | undefined> {
+    return this.rpgGroups.find((item) => item.id === id);
+  }
 }

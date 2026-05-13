@@ -6,8 +6,8 @@ import { InMemoryUserRepository } from 'user/infrastructure/in-memory-user.repos
 import { AppModule } from '../src/app.module';
 import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
 import { RPG_GROUP_REPOSITORY } from 'rpg-group/infrastructure/rpg-group.tokens';
-import { JwtAuthGuard } from 'common/jwt-auth.guard';
 import { CreateRpgGroupRequestBodyDto } from 'rpg-group/dto/create-rpg-group.dto';
+import { JwtRefreshAuthGuard } from 'auth/jwt-refresh-auth.guard';
 
 describe('RpgGroupController (e2e)', () => {
   let app: INestApplication;
@@ -22,7 +22,7 @@ describe('RpgGroupController (e2e)', () => {
       .useClass(InMemoryUserRepository)
       .overrideProvider(RPG_GROUP_REPOSITORY)
       .useClass(InMemoryRpgGroupRepository)
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(JwtRefreshAuthGuard)
       .useValue({
         canActivate: (context) => {
           const req = context.switchToHttp().getRequest();
@@ -170,6 +170,42 @@ describe('RpgGroupController (e2e)', () => {
           masterId: expect.any(String),
         });
       }
+    });
+  });
+
+  describe('/rpg-group/:id (GET)', () => {
+    it('should return a rpg group by id', async () => {
+      const user = await repoUser.create({
+        email: 'john@email.com',
+        nickname: 'john',
+        password: '123456',
+      });
+
+      const dto: CreateRpgGroupRequestBodyDto = {
+        name: 'Os Guardiões do Caos',
+        masterId: user.id,
+        tags: ['1', '2'],
+        description:
+          'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
+        genre: 'fantasia',
+        nivel: 'novato',
+        maxPlayers: 5,
+        currentPlayers: 1,
+        schedule: '',
+        platform: 'presencial',
+        location: 'sao paulo',
+      };
+
+      const createdRpgGroup = await repoRpg.create(dto);
+
+      await request(app.getHttpServer())
+        .get(`/rpg-group/${createdRpgGroup.id}`)
+        .expect(200);
+    });
+
+    it('should throw an error if rpg group was not foud', async () => {
+      await request(app.getHttpServer()).get('/rpg-group/id');
+      expect(404);
     });
   });
 });

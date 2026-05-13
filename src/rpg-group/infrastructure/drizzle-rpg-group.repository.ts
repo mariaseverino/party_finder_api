@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { db } from 'db/client';
 import { rpgGroups, rpgGroupTags } from 'db/schema/rpg-group';
 import { tags } from 'db/schema/tag';
+import { RPGGroup } from 'rpg-group/entities/rpg-group.entity';
 
 @Injectable()
 export class DrizzleRpgGroupRepository implements RpgGroupRepository {
@@ -43,5 +44,15 @@ export class DrizzleRpgGroupRepository implements RpgGroupRepository {
 
   async createTag(name: string) {
     await db.insert(tags).values({ name });
+  }
+
+  async findById(id: string) {
+    const [rpgGroup] = await db
+      .select()
+      .from(rpgGroups)
+      .where(eq(rpgGroups.id, id))
+      .limit(1);
+
+    return rpgGroup;
   }
 }

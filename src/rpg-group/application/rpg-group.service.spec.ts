@@ -15,13 +15,18 @@ const mockRpgGroupRepository = {
   saveTags: jest.fn(),
   findAll: jest.fn(),
   findAllByMaster: jest.fn(),
+  findById: jest.fn(),
 };
 
 const mockUserRepository = {
+  create: jest.fn(),
   saveInterests: jest.fn(),
   findExistingTags: jest.fn(),
   findByEmail: jest.fn(),
   findById: jest.fn(),
+  saveRefreshToken: jest.fn(),
+  clearRefreshToken: jest.fn(),
+  findRefreshToken: jest.fn(),
 };
 
 describe('RpgGroupService', () => {
@@ -157,6 +162,25 @@ describe('RpgGroupService', () => {
         'group-1',
         dto.tags,
       );
+    });
+  });
+
+  describe('getRpgGroupById', () => {
+    it('should throw a error if rpg group was not found', async () => {
+      mockRpgGroupRepository.findById.mockResolvedValue(undefined);
+
+      await expect(rpgGroupService.getRpgGroupById('i')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('should return a rpg group by id', async () => {
+      const group = { id: 'group-1', name: 'Os Guardiões' } as RPGGroup;
+      mockRpgGroupRepository.findById.mockResolvedValue(group);
+
+      const result = await rpgGroupService.getRpgGroupById('group-1');
+
+      expect(result).toEqual(group);
     });
   });
 });
