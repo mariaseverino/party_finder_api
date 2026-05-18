@@ -3,8 +3,19 @@ import { CreateRpgGroupDto } from '../dto/create-rpg-group.dto';
 import { RPGGroup } from '../entities/rpg-group.entity';
 import { RpgGroupRepository } from '../entities/rpg-group.repository';
 import { tags } from 'db/schema/tag';
+import { GroupMembershipDto } from 'rpg-group/dto/rpg-group-membership.dto';
 
 export class InMemoryRpgGroupRepository implements RpgGroupRepository {
+  joinMemberToRpgGroup(data: GroupMembershipDto): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  leaveMemberToRpgGroup(data: GroupMembershipDto): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  changeTotalPlayers(rpgGroupId: string, players: number): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   private rpgGroups: RPGGroup[] = [];
   private rpgTags: string[] = ['1', '2'];
   private tags: { name: string; id: string }[] = [];

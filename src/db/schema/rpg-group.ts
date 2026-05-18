@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { pgEnum } from 'drizzle-orm/pg-core';
 import { tags } from './tag';
+import { users } from './user';
 
 export const nivelEnum = pgEnum('nivel', ['novato', 'experiente']);
 
@@ -51,4 +52,15 @@ export const rpgGroupTags = pgTable('rpg_group_tags', {
   tagId: uuid()
     .notNull()
     .references(() => tags.id),
+});
+
+export const rpgMembers = pgTable('rpg_members', {
+  id: uuid().defaultRandom().primaryKey(),
+
+  rpgGroupId: uuid()
+    .notNull()
+    .references(() => rpgGroups.id),
+  memberId: uuid()
+    .notNull()
+    .references(() => users.id),
 });

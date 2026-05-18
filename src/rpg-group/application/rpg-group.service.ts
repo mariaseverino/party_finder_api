@@ -9,6 +9,7 @@ import { RPG_GROUP_REPOSITORY } from '../infrastructure/rpg-group.tokens';
 import { type RpgGroupRepository } from '../entities/rpg-group.repository';
 import { type UserRepository } from 'user/domain/user.repository';
 import { USER_REPOSITORY } from 'user/infrastructure/user.tokens';
+import { GroupMembershipDto } from 'rpg-group/dto/rpg-group-membership.dto';
 
 @Injectable()
 export class RpgGroupService {
@@ -59,5 +60,49 @@ export class RpgGroupService {
     }
 
     return rpgGroupExists;
+  }
+
+  async addMemberToRpgGroup({ memberId, rpgGroupId }: GroupMembershipDto) {
+    const rpgGroupExists = await this.rpgGroupRepository.findById(rpgGroupId);
+
+    if (!rpgGroupExists) {
+      throw new NotFoundException();
+    }
+
+    if (rpgGroupExists.currentPlayers == rpgGroupExists.maxPlayers) {
+      throw new BadRequestException();
+    }
+
+    await this.rpgGroupRepository.joinMemberToRpgGroup({
+      rpgGroupId,
+      memberId,
+    });
+
+    await this.rpgGroupRepository.changeTotalPlayers(
+      rpgGroupId,
+      rpgGroupExists.currentPlayers + 1,
+    );
+  }
+
+  async removeMemberToRpgGroup({ memberId, rpgGroupId }: GroupMembershipDto) {
+    const rpgGroupExists = await this.rpgGroupRepository.findById(rpgGroupId);
+
+    if (!rpgGroupExists) {
+      throw new NotFoundException();
+    }
+
+    if (rpgGroupExists.currentPlayers === 0) {
+      throw new BadRequestException();
+    }
+
+    await this.rpgGroupRepository.leaveMemberToRpgGroup({
+      rpgGroupId,
+      memberId,
+    });
+
+    await this.rpgGroupRepository.changeTotalPlayers(
+      rpgGroupId,
+      rpgGroupExists.currentPlayers - 1,
+    );
   }
 }

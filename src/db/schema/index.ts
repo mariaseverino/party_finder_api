@@ -1,4 +1,4 @@
-import { rpgGroups, rpgGroupTags } from './rpg-group';
+import { rpgGroups, rpgGroupTags, rpgMembers } from './rpg-group';
 import { tags } from './tag';
 import { refreshTokens, userInterests, users } from './user';
 
@@ -9,4 +9,5 @@ export const schema = {
   refreshTokens,
   rpgGroups,
   rpgGroupTags,
+  rpgMembers,
 };
